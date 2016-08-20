@@ -1,12 +1,14 @@
 //
-//  ViewController.swift
+//  MemeEditorViewController.swift
 //  Meme Me
 //
-//  Created by Mike Weng on 12/22/15.
-//  Copyright © 2015 Weng. All rights reserved.
+//  Created by Mike Weng on 1/23/16.
+//  Copyright © 2016 Weng. All rights reserved.
 //
 
+import Foundation
 import UIKit
+import CoreData
 
 class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate {
     
@@ -19,6 +21,11 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     @IBOutlet weak var bottomTextField: UITextField!
     @IBOutlet weak var shareButton: UIBarButtonItem!
     @IBOutlet weak var bottomToolBar: UIToolbar!
+    var canDismissKeyboard = false
+    var sharedContext: NSManagedObjectContext {
+        return CoreDataStackManager.sharedInstance().managedObjectContext
+    }
+    
     let memeTextAttributes = [
         NSStrokeColorAttributeName : UIColor.blackColor(),
         NSForegroundColorAttributeName : UIColor.whiteColor(),
@@ -49,22 +56,22 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         // check if camera is available, if so enable the button
         cameraButton.enabled = UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera)
     }
-
+    
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
         unsubscribeFromKeyboardNotifications()
     }
     
-
+    
     
     @IBAction func pickFromLibrary(sender: AnyObject) {
         let pickerController = UIImagePickerController()
         pickerController.delegate = self
         pickerController.sourceType = UIImagePickerControllerSourceType.PhotoLibrary
         self.presentViewController(pickerController, animated: true, completion: nil)
-    
+        
     }
-
+    
     @IBAction func pickFromCamera(sender: AnyObject) {
         let pickerController = UIImagePickerController()
         pickerController.delegate = self
@@ -94,7 +101,6 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     @IBAction func cancelEdit(sender: AnyObject) {
         imagePickerView.image = nil
         shareButton.enabled = false
-        setDefaultText()
         self.dismissViewControllerAnimated(true, completion: nil)
         
     }
@@ -104,20 +110,12 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     func textFieldShouldBeginEditing(textField: UITextField) -> Bool {
-        
-        if textField == bottomTextField {
-            subscribeToKeyboardNotifications()
-        }
+        subscribeToKeyboardNotifications(textField)
         return true
-    }
-    func dismissKeyboard() {
-        view.endEditing(true)
     }
     
     func textFieldDidEndEditing(textField: UITextField) {
-        if textField.text == "" {
-            setDefaultText()
-        }
+        setDefaultText()
         unsubscribeFromKeyboardNotifications()
     }
     
@@ -126,11 +124,13 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         return true
     }
     
-    
-    func subscribeToKeyboardNotifications() {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
+    func subscribeToKeyboardNotifications(textField: UITextField) {
+        if textField == bottomTextField {
+            NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillShow:", name: UIKeyboardWillShowNotification, object: nil)
+            
+            NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillHide:", name: UIKeyboardWillHideNotification, object: nil)
+        }
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardDidShow:", name: UIKeyboardDidShowNotification, object: nil)
         
     }
     
@@ -145,17 +145,36 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
     func keyboardWillHide(notification: NSNotification) {
         self.view.frame.origin.y += getKeyboardHeight(notification)
     }
+    
+    func keyboardDidShow(notification: NSNotification) {
+        canDismissKeyboard = true
+    }
+    
+    func getKeyboardHeight(notification: NSNotification) -> CGFloat {
+        let userinfo = notification.userInfo
+        let keboardSize = userinfo![UIKeyboardFrameEndUserInfoKey] as! NSValue
+        return keboardSize.CGRectValue().height
+    }
+    
+    func dismissKeyboard() {
+        if canDismissKeyboard == true {
+            canDismissKeyboard = false
+            view.endEditing(true)
+        }
+    }
+    
     func save(activityType:String?, completed:Bool, returnItems: [AnyObject]?, error:NSError?) {
         if !completed {
             return
         }
-        meme = Meme(topText: topTextField.text!, bottomText: bottomTextField.text!, image: imagePickerView.image!, memedImage: memedImage)
+        meme = Meme(topText: topTextField.text!, bottomText: bottomTextField.text!, image: imagePickerView.image!, memedImage: memedImage, context: sharedContext)
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         appDelegate.memes.append(meme)
+        CoreDataStackManager.sharedInstance().saveContext()
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     
-
+    
     func generateMemedImage() -> UIImage {
         
         navigationController?.navigationBarHidden = true
@@ -187,11 +206,7 @@ class MemeEditorViewController: UIViewController, UIImagePickerControllerDelegat
         bottomTextField.textAlignment = NSTextAlignment.Center
     }
     
-    func getKeyboardHeight(notification: NSNotification) -> CGFloat {
-        let userinfo = notification.userInfo
-        let keboardSize = userinfo![UIKeyboardFrameEndUserInfoKey] as! NSValue
-        return keboardSize.CGRectValue().height
-    }
-
+    
+    
 }
 

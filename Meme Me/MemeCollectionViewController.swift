@@ -8,11 +8,13 @@
 
 import Foundation
 import UIKit
+import CoreData
 
 class MemeCollectionViewController: UICollectionViewController {
     var memes: [Meme] {
         return (UIApplication.sharedApplication().delegate as! AppDelegate).memes
     }
+
     
     @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     override func viewDidLoad() {
@@ -30,7 +32,7 @@ class MemeCollectionViewController: UICollectionViewController {
     // Collection
     override func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("collectionItem", forIndexPath: indexPath) as! MemeCollectionViewCell
-        cell.memeImage.image = memes[indexPath.item].memedImage
+        cell.memeImage.image = UIImage(data: memes[indexPath.item].memedImageData)
 
         return cell
     }
@@ -45,7 +47,4 @@ class MemeCollectionViewController: UICollectionViewController {
         
         self.navigationController?.pushViewController(detailViewController, animated: true)
     }
-
-    
-    
 }

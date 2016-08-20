@@ -28,7 +28,7 @@ class MemeTableViewController: UITableViewController {
         let cell = tableView.dequeueReusableCellWithIdentifier("tableCell", forIndexPath: indexPath) as! MemeTableViewCell
         
         cell.tableTextField.text = memes[indexPath.row].topText as String
-        cell.tableImageView.image = memes[indexPath.row].memedImage
+        cell.tableImageView.image = UIImage(data: memes[indexPath.item].memedImageData)
         
         return cell
     }

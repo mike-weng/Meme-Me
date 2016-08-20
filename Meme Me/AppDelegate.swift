@@ -7,13 +7,26 @@
 //
 
 import UIKit
+import CoreData
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
     var memes = [Meme]()
-
+    var sharedContext: NSManagedObjectContext {
+        return CoreDataStackManager.sharedInstance().managedObjectContext
+    }
+    func fetchAllMemes() -> [Meme] {
+        let fetchRequest = NSFetchRequest(entityName: "Meme")
+        
+        do {
+            return try sharedContext.executeFetchRequest(fetchRequest) as! [Meme]
+        } catch let error as NSError {
+            print("Error in fetchAllMemes(): \(error)")
+            return [Meme]()
+        }
+    }
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
@@ -36,6 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationDidBecomeActive(application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        memes = fetchAllMemes()
     }
 
     func applicationWillTerminate(application: UIApplication) {
