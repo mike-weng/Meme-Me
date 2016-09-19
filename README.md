@@ -19,11 +19,16 @@ Mainly, I used storyboard for UI design, but I have also written code to adjust 
 
 ### Meme Collection View
 
+This view consists of all the memes users have created in a grid layout. Users can easily scroll through and examine each meme by tapping on it. I used a collectionViewController that implements the delegate and data source required for a collection view. For each grid cell, I created a custom collectionViewCell to include an imageView and populate it from the created meme model data.
+The top right buttom will take user to the Meme editor view.
+
 ### Meme Table View
 
-### Meme Detail View
+This view is similar to the collection view. But instead of presenting the memes in a grid layout, I also implemented a table view layout. Each cell is a custom tableView cell with imageView and and a text label. The table view controller delegate and data source protocals are very similar to collectionViewController.
 
 ### Meme Editor View
+
+This view allows users to edit images and create memes. Users will be presented with two choices, one to take a photo and one to choose a photo from library. Once user has prceeded with either one of the option, the image will appear in the view with a top text label and a bottom text label that allows users to write their meme messages. The top left button is tapped to share and save the image. Memes saved will be shown in both meme table view and meme collection view
 
 ## Contributing
 
