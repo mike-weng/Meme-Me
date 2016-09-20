@@ -15,7 +15,7 @@ Mainly, I used storyboard for UI design, but I have also written code to adjust 
 1. git clone https://github.com/mmmk84512/Meme-Me
 2. open MemeMe.xcodeproj
 
-## Usage
+## Features
 
 ### Meme Collection View
 
