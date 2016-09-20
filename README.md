@@ -16,6 +16,15 @@ Mainly, I used storyboard for UI design, but I have also written code to adjust 
 2. open MemeMe.xcodeproj
 
 ## Features
+- Create a Meme by taking or selecting a photo
+- Add text to the top and bottom
+- Share and Save your Meme
+- View saved Memes in a UITableView and a UICollectionView
+- View a saved Meme
+- Edit a saved Meme
+- Delete saved Memes
+
+## Project Overview
 
 ### Meme Collection View
 
